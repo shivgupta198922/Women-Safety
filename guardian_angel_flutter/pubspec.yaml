@@ -1,0 +1,55 @@
+name: guardian_angel
+description: Ultimate Premium Guardian Angel Women Safety Platform
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.1.2
+  riverpod: ^2.5.1
+  http: ^1.2.1
+  geolocator: ^12.0.0
+  google_maps_flutter: ^2.7.0
+  sensors_plus: ^5.0.0
+  camera: ^0.11.0+1
+  flutter_secure_storage: ^9.2.2
+  telephony: ^0.2.0
+  url_launcher: ^6.3.0
+  socket_io_client: ^2.0.3+1
+  shared_preferences: ^2.3.2
+  flutter_tts: ^4.2.5
+  permission_handler: ^11.3.1
+
+  lottie: ^3.1.2
+  google_fonts: ^6.2.1
+  animate_do: ^3.3.4
+  glassmorphism: ^3.0.0
+
+  local_auth: ^2.3.0
+  flutter_callkit_incoming: ^2.0.1
+
+  background_locator_2: ^2.0.6
+  workmanager: ^0.5.2
+
+  qr_flutter: ^4.1.0
+  share_plus: ^10.0.2
+  rive: ^0.13.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/animations/
+    - assets/images/
+    - assets/icons/

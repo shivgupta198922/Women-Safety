@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Guardian Angel Admin Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { margin: 0; font-family: Arial; }
+    #map { height: 70vh; width: 100%; }
+    .sidebar { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 1000; width: 300px; }
+    .alert { background: #fee; padding: 10px; margin: 5px 0; border-left: 4px solid red; }
+    .stats { display: flex; gap: 10px; margin-bottom: 10px; }
+    .stat { flex: 1; text-align: center; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>🛡️ Guardian Angel Admin</h2>
+    <div class="stats">
+      <div class="stat">
+        <div id="active-sos">0</div>
+        <div>Active SOS</div>
+      </div>
+      <div class="stat">
+        <div id="total-users">0</div>
+        <div>Total Users</div>
+      </div>
+      <div class="stat">
+        <div id="today-alerts">0</div>
+        <div>Today's Alerts</div>
+      </div>
+    </div>
+    <h3>Live Alerts</h3>
+    <div id="alerts"></div>
+  </div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
