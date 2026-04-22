@@ -3,14 +3,14 @@ const User = require('../models/User');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.header('x-auth-token'); // Assuming token is sent in 'x-auth-token' header
     if (!token) return res.status(401).json({ error: 'No token, authorization denied' });
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // decoded.user.id from auth/login
+    const user = await User.findById(decoded.user.id);
     if (!user) return res.status(401).json({ error: 'Invalid token' });
     
-    req.user = user;
+    req.user = user; // Attach the full user object to the request
     next();
   } catch (err) {
     res.status(401).json({ error: 'Token is not valid' });

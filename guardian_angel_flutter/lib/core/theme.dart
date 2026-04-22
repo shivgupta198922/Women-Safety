@@ -1,17 +1,21 @@
-import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
-import 'package:flutter/rendering.dart';
+
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GuardianTheme {
   static const Color primaryGradientStart = Color(0xFFE91E63); // Emergency red
   static const Color primaryGradientEnd = Color(0xFF7B2CBF); // Purple
+  static const Color primaryColor = Color(0xFFE91E63); // Define primaryColor for general use
+  static const Color darkGradientStart = Color(0xFF1A1A2E); // Dark theme background start
+  static const Color darkGradientEnd = Color(0xFF16213E); // Dark theme background end
   static const Color accentGold = Color(0xFFFFC107);
   static const Color glassWhite = Color(0xCCFFFFFF);
   static const Color glassBlack = Color(0xCC000000);
 
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
+    primaryColor: primaryColor, // Explicitly set primaryColor
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(seedColor: primaryGradientStart, brightness: Brightness.light),
     textTheme: GoogleFonts.poppinsTextTheme(
@@ -125,34 +129,43 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: padding,
+      // Removed direct padding here, it's applied inside BackdropFilter
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: Colors.white.withAlpha(51), // 0.2 * 255
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.1)
+              : Colors.white.withOpacity(0.2),
           width: 1,
         ),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color.fromRGBO(color.red, color.green, color.blue, 0.15),
-            Color.fromRGBO(color.red, color.green, color.blue, 0.05),
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.white.withOpacity(0.15),
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withOpacity(0.02)
+                : Colors.white.withOpacity(0.05),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            spreadRadius: 1,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.4)
+                : Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            spreadRadius: 0,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: child,
+          filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur), // Apply blur to the background
+          child: Padding(padding: padding, child: child), // Apply padding inside the blurred area, fixed duplicate
         ),
       ),
     );
@@ -261,4 +274,3 @@ class SOSButton extends StatelessWidget {
     );
   }
 }
-

@@ -1,4 +1,4 @@
-name: guardian_angel
+name: guardian_angel_flutter
 description: Ultimate Premium Guardian Angel Women Safety Platform
 publish_to: 'none'
 version: 2.0.0+1
@@ -11,35 +11,72 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Core & State Management
   provider: ^6.1.2
-  riverpod: ^2.5.1
   http: ^1.2.1
+
+  # Location & Maps
   geolocator: ^12.0.0
   google_maps_flutter: ^2.7.0
-  sensors_plus: ^5.0.0
-  camera: ^0.11.0+1
+
+  # Sensors / Voice
+  speech_to_text: ^7.3.0
+  sensors_plus: ^5.0.1
+
+  # Use built-in HapticFeedback instead of broken flutter_vibrate
+  # import 'package:flutter/services.dart';
+
+  # Camera
+  camera: ^0.11.4
+
+  # Secure Storage
   flutter_secure_storage: ^9.2.2
+
+  # SMS / Calls
   telephony: ^0.2.0
   url_launcher: ^6.3.0
-  socket_io_client: ^2.0.3+1
+
+  # Real-time communication
+  socket_io_client: ^3.1.4
+
+  # Local Storage
   shared_preferences: ^2.3.2
+
+  # Text to Speech
   flutter_tts: ^4.2.5
-  permission_handler: ^11.3.1
 
-  lottie: ^3.1.2
-  google_fonts: ^6.2.1
-  animate_do: ^3.3.4
+  # Permissions
+  permission_handler: ^11.4.0
+
+  # UI / Design
+  lottie: ^3.3.3
+  google_fonts: ^6.3.3
+  animate_do: ^3.3.9
   glassmorphism: ^3.0.0
+  animations: ^2.0.11
 
+  # Biometric Auth
   local_auth: ^2.3.0
-  flutter_callkit_incoming: ^2.0.1
 
+  # Fake Call / Notifications
+  flutter_callkit_incoming: ^2.5.8
+  flutter_local_notifications: ^17.2.4
+  intl: ^0.20.2
+
+  # Background Tasks
   background_locator_2: ^2.0.6
   workmanager: ^0.5.2
 
+  # Recording
+  record: ^6.2.0
+  path_provider: ^2.1.2
+
+  # Share / QR
   qr_flutter: ^4.1.0
-  share_plus: ^10.0.2
-  rive: ^0.13.4
+  share_plus: ^10.1.4
+
+  # Animations
+  rive: ^0.13.20
 
 dev_dependencies:
   flutter_test:

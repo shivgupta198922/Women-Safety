@@ -1,36 +1,33 @@
 class UserModel {
   final String id;
-  final String name;
+  final String fullName;
   final String email;
-  final String phone;
+  final String phoneNumber;
   final String? profilePic;
-  final List<String> emergencyContacts;
   final bool isAdmin;
-  final Map<String, dynamic> safetySettings;
+  final Map<String, dynamic> settings; // Changed from safetySettings
   final Map<String, dynamic>? lastLocation;
 
   UserModel({
     required this.id,
-    required this.name,
+    required this.fullName,
     required this.email,
-    required this.phone,
+    required this.phoneNumber,
     this.profilePic,
-    required this.emergencyContacts,
-    required this.isAdmin,
-    required this.safetySettings,
+    this.isAdmin = false, // Initialize isAdmin here
+    required this.settings,
     this.lastLocation,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['_id'],
-      name: json['name'],
+      fullName: json['fullName'] ?? '', // Use fullName
       email: json['email'],
-      phone: json['phone'],
+      phoneNumber: json['phoneNumber'] ?? '', // Use phoneNumber
       profilePic: json['profilePic'],
-      emergencyContacts: List<String>.from(json['emergencyContacts'] ?? []),
       isAdmin: json['isAdmin'] ?? false,
-      safetySettings: Map<String, dynamic>.from(json['safetySettings'] ?? {}),
+      settings: Map<String, dynamic>.from(json['settings'] ?? {}), // Use settings
       lastLocation: json['lastLocation'],
     );
   }

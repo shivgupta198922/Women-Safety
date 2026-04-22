@@ -3,18 +3,41 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { check, validationResult } = require('express-validator');
+const auth = require('../middleware/auth');
 
-router.post('/register', async (req, res) => {
+router.post(
+  '/register',
+  [
+    check('fullName', 'Full name is required').not().isEmpty(),
+    check('phoneNumber', 'Phone number is required').not().isEmpty(),
+    check('email', 'Please include a valid email').isEmail(),
+    check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
+  ],
+  async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { fullName, email, phoneNumber, password } = req.body;
+
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ msg: 'User already exists' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user = new User({ name, email, phone, password: hashedPassword });
+    user = new User({ fullName, email, phoneNumber, password: hashedPassword });
     await user.save();
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, name, email, phone } });
+    const payload = { user: { id: user._id } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    res.json({ token });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(err.message);
+    res.status(500).send('Server error');
   }
 });
 
@@ -26,10 +49,25 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
     
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, name: user.name, email, phone } });
+    const payload = { user: { id: user._id } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '5h' });
+    res.json({ token });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   GET api/auth/me
+// @desc    Get logged in user
+// @access  Private
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 

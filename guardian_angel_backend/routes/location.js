@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 router.post('/update', auth, async (req, res) => {
   try {
     const { lat, lng } = req.body;
-    const user = await User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate( // Use findByIdAndUpdate for direct user update
       req.user.id,
       { 
         lastLocation: { lat, lng, timestamp: new Date() }
@@ -21,7 +21,7 @@ router.post('/update', auth, async (req, res) => {
 });
 
 // Get last location
-router.get('/', auth, async (req, res) => {
+router.get('/me', auth, async (req, res) => { // Changed to /me for consistency
   const user = await User.findById(req.user.id).select('lastLocation');
   res.json(user.lastLocation || {});
 });

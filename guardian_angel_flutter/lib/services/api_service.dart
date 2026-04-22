@@ -1,54 +1,90 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:guardian_angel_flutter/constants/app_constants.dart'; // Corrected import
+ 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5000/api';
-  static const storage = FlutterSecureStorage();
+  static const String _baseUrl = AppConstants.baseUrl;
+  static const String _tokenKey = 'jwt_token';
 
   static Future<String?> getToken() async {
-    return await storage.read(key: 'jwt_token');
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_tokenKey);
   }
 
-  static setToken(String token) async {
-    await storage.write(key: 'jwt_token', value: token);
+  static Future<void> setToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
   }
 
-  static clearToken() async {
-    await storage.delete(key: 'jwt_token');
+  static Future<void> clearToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
   }
 
-  static Future<http.Response> get(String endpoint, {Map<String, String>? headers}) async {
-    final token = await getToken();
-    headers ??= {};
-    if (token != null) headers['Authorization'] = 'Bearer $token';
-    return http.get(Uri.parse('$baseUrl$endpoint'), headers: headers);
-  }
-
-  static Future<http.Response> post(String endpoint, Map<String, dynamic> data, {bool auth = true}) async {
-    final token = auth ? await getToken() : null;
-    final headers = {
+  static Future<Map<String, String>> _getHeaders({bool includeAuth = true}) async {
+    final headers = <String, String>{
       'Content-Type': 'application/json',
     };
-    if (token != null) headers['Authorization'] = 'Bearer $token';
-    return http.post(Uri.parse('$baseUrl$endpoint'), headers: headers, body: json.encode(data));
+    if (includeAuth) {
+      final token = await getToken();
+      if (token != null) {
+        headers['x-auth-token'] = token; // Use 'x-auth-token' as per backend
+      }
+    }
+    return headers;
   }
 
-  static Future<http.Response> put(String endpoint, Map<String, dynamic> data) async {
-    final token = await getToken();
-    final headers = {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-    return http.put(Uri.parse('$baseUrl$endpoint'), headers: headers, body: json.encode(data));
+  static Future<http.Response> post(String endpoint, Map<String, dynamic> data, {bool includeAuth = true}) async {
+    final url = Uri.parse('$_baseUrl$endpoint');
+    final headers = await _getHeaders(includeAuth: includeAuth);
+    return http.post(
+      url,
+      headers: headers,
+      body: json.encode(data),
+    );
   }
 
-  static Future<http.Response> delete(String endpoint) async {
-    final token = await getToken();
-    final headers = {
-      'Authorization': 'Bearer $token',
-    };
-    return http.delete(Uri.parse('$baseUrl$endpoint'), headers: headers);
+  static Future<http.Response> put(String endpoint, Map<String, dynamic> data, {bool includeAuth = true}) async {
+    final url = Uri.parse('$_baseUrl$endpoint');
+    final headers = await _getHeaders(includeAuth: includeAuth);
+    return http.put(
+      url,
+      headers: headers,
+      body: json.encode(data),
+    );
+  }
+
+  static Future<http.Response> get(String endpoint, {bool includeAuth = true}) async {
+    final url = Uri.parse('$_baseUrl$endpoint');
+    final headers = await _getHeaders(includeAuth: includeAuth);
+    return http.get(
+      url,
+      headers: headers,
+    );
+  }
+
+  static Future<http.Response> delete(String endpoint, {bool includeAuth = true}) async {
+    final url = Uri.parse('$_baseUrl$endpoint');
+    final headers = await _getHeaders(includeAuth: includeAuth);
+    return http.delete(
+      url,
+      headers: headers,
+    );
+  }
+
+
+  // Helper to handle API responses and throw specific exceptions
+  static dynamic handleResponse(http.Response response) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      if (errorBody['errors'] != null && errorBody['errors'].isNotEmpty) {
+        throw Exception(errorBody['errors'][0]['msg']);
+      } else {
+        throw Exception(errorBody['msg'] ?? 'An unknown error occurred: ${response.statusCode}');
+      }
+    }
   }
 }
