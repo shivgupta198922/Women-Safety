@@ -83,7 +83,12 @@ class ApiService {
       if (errorBody['errors'] != null && errorBody['errors'].isNotEmpty) {
         throw Exception(errorBody['errors'][0]['msg']);
       } else {
-        throw Exception(errorBody['msg'] ?? 'An unknown error occurred: ${response.statusCode}');
+        throw Exception(
+          errorBody['msg'] ??
+          errorBody['error'] ??
+          errorBody['message'] ??
+          'An unknown error occurred: ${response.statusCode}',
+        );
       }
     }
   }

@@ -2,9 +2,16 @@ const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
   fullName: { type: String, required: true }, // Changed from 'name' to 'fullName' for consistency
-  email: { type: String, required: true, unique: true },
-  phoneNumber: { type: String, required: true, unique: true }, // Changed from 'phone' to 'phoneNumber'
+  email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  phoneNumber: { type: String, required: true, unique: true, trim: true }, // Changed from 'phone' to 'phoneNumber'
   password: { type: String, required: true },
+  accountType: {
+    type: String,
+    enum: ['individual', 'parent', 'child', 'hospital', 'police', 'council', 'guardian'],
+    default: 'individual'
+  },
+  organizationName: String,
+  departmentName: String,
   profilePic: String,
   fcmToken: String,
   // emergencyContacts: [{ type: String }], // This will now be managed via a separate Contact model
@@ -38,6 +45,22 @@ const UserSchema = new mongoose.Schema({
     lat: Number,
     lng: Number,
     timestamp: { type: Date }
+  },
+  securePairing: {
+    pairingCode: String,
+    targetPairingCode: String,
+    pairingStatus: {
+      type: String,
+      enum: ['unpaired', 'pending', 'linked'],
+      default: 'unpaired'
+    },
+    devicePublicKey: String,
+    accessPermissions: {
+      notifications: { type: Boolean, default: true },
+      liveLocation: { type: Boolean, default: true },
+      camera: { type: Boolean, default: false },
+      microphone: { type: Boolean, default: false }
+    }
   },
   lastCheckin: Date
 }, { timestamps: true });

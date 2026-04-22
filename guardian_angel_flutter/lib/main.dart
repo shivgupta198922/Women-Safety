@@ -134,6 +134,7 @@ import 'screens/dashboard/live_location_screen.dart';
 import 'screens/dashboard/contacts_screen.dart';
 import 'screens/dashboard/profile_screen.dart';
 import 'screens/dashboard/settings_screen.dart';
+import 'utils/app_utils.dart';
 
 void main() {
   runApp(
@@ -165,6 +166,8 @@ class GuardianAngelApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Guardian Angel Premium',
+      navigatorKey: AppUtils.navigatorKey,
+      scaffoldMessengerKey: AppUtils.scaffoldMessengerKey,
       theme: GuardianTheme.lightTheme,
       darkTheme: GuardianTheme.darkTheme,
       themeMode: settings.themeMode,
@@ -203,7 +206,11 @@ class AuthWrapper extends StatelessWidget {
 
         if (auth.isAuthenticated) {
           try {
-            SocketService().connect();
+            SocketService().connect(
+              userId: auth.user?.id,
+              accountType: auth.user?.accountType,
+              userName: auth.user?.fullName,
+            );
           } catch (_) {}
           return HomeScreen();
         }

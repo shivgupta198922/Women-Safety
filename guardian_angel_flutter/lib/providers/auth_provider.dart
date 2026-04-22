@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../services/socket_service.dart'; // Import SocketService
@@ -14,7 +13,7 @@ class AuthProvider with ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {String? accountType}) async {
     if (_isLoading) return false;
 
     _isLoading = true;
@@ -24,12 +23,25 @@ class AuthProvider with ChangeNotifier {
     try {
       final response = await ApiService.post(
         '/auth/login',
-        {'email': email, 'password': password},
+        {
+          'identifier': email.trim(),
+          'password': password,
+          if (accountType != null && accountType.trim().isNotEmpty) 'accountType': accountType.trim(),
+        },
         includeAuth: false,
       );
       final data = ApiService.handleResponse(response) as Map<String, dynamic>;
       await ApiService.setToken(data['token']);
-      await _loadCurrentUser();
+      if (data['user'] is Map<String, dynamic>) {
+        _user = UserModel.fromJson(Map<String, dynamic>.from(data['user']));
+        SocketService().connect(
+          userId: _user?.id,
+          accountType: _user?.accountType,
+          userName: _user?.fullName,
+        );
+      } else {
+        await _loadCurrentUser();
+      }
       return true;
     } catch (e) {
       _errorMessage = e.toString();
@@ -40,7 +52,16 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String fullName, String phoneNumber, String email, String password) async {
+  Future<bool> register({
+    required String fullName,
+    required String phoneNumber,
+    required String email,
+    required String password,
+    String accountType = 'individual',
+    String? organizationName,
+    String? departmentName,
+    Map<String, dynamic>? securePairing,
+  }) async {
     if (_isLoading) return false;
 
     _isLoading = true;
@@ -48,13 +69,24 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiService.post('/auth/register', {
-        'fullName': fullName, // Use fullName
-        'phoneNumber': phoneNumber, // Use phoneNumber
-        'email': email,
-        'password': password
-      }, includeAuth: false);
-      ApiService.handleResponse(response);
+      final response = await ApiService.post(
+        '/auth/register',
+        {
+          'fullName': fullName,
+          'phoneNumber': phoneNumber,
+          'email': email,
+          'password': password,
+          'accountType': accountType,
+          if (organizationName != null && organizationName.trim().isNotEmpty) 'organizationName': organizationName.trim(),
+          if (departmentName != null && departmentName.trim().isNotEmpty) 'departmentName': departmentName.trim(),
+          if (securePairing != null) 'securePairing': securePairing,
+        },
+        includeAuth: false,
+      );
+      final data = ApiService.handleResponse(response);
+      if (data is Map<String, dynamic> && data['token'] is String) {
+        await ApiService.setToken(data['token']);
+      }
       return true;
     } catch (e) {
       _errorMessage = e.toString();
@@ -122,10 +154,14 @@ class AuthProvider with ChangeNotifier {
           fullName: fullName,
           email: email,
           phoneNumber: phoneNumber,
+          accountType: _user!.accountType,
+          organizationName: _user!.organizationName,
+          departmentName: _user!.departmentName,
           profilePic: _user!.profilePic,
           isAdmin: _user!.isAdmin,
           settings: _user!.settings,
           lastLocation: _user!.lastLocation,
+          securePairing: _user!.securePairing,
         );
       }
     } catch (e) {
@@ -147,6 +183,10 @@ class AuthProvider with ChangeNotifier {
     final response = await ApiService.get('/auth/me');
     final responseData = ApiService.handleResponse(response) as Map<String, dynamic>;
     _user = UserModel.fromJson(responseData);
-    SocketService().connect();
+    SocketService().connect(
+      userId: _user?.id,
+      accountType: _user?.accountType,
+      userName: _user?.fullName,
+    );
   }
 }

@@ -13,6 +13,11 @@ class SosProvider with ChangeNotifier {
   bool get isSendingSos => _isSendingSos;
   String? get sosMessage => _sosMessage;
 
+  Future<Map<String, dynamic>> _loadCurrentUserProfile() async {
+    final response = await ApiService.get('/auth/me');
+    return Map<String, dynamic>.from(ApiService.handleResponse(response) as Map<String, dynamic>);
+  }
+
   Future<void> sendSos({String message = "I need help! Please track my location.", String type = "SOS_PANIC", String? audioRecordingUrl, String? videoRecordingUrl}) async {
     _isSendingSos = true;
     _sosMessage = null;
@@ -30,6 +35,9 @@ class SosProvider with ChangeNotifier {
         'lng': position.longitude,
         'timestamp': position.timestamp?.toIso8601String(),
       };
+      final currentUser = await _loadCurrentUserProfile();
+      final userId = (currentUser['_id'] ?? '').toString();
+      final senderName = (currentUser['fullName'] ?? 'A user').toString();
 
       // 1. Send to backend API (for logging, potential SMS/Email integration)
       await ApiService.post('/sos/send', {
@@ -42,12 +50,13 @@ class SosProvider with ChangeNotifier {
 
       // 2. Emit via Socket.IO for real-time alerts to connected clients
       SocketService().emit('sendSOS', {
+        'userId': userId,
+        'senderName': senderName,
         'type': type,
         'location': locationData,
         'message': message,
         if (audioRecordingUrl != null) 'audioRecordingUrl': audioRecordingUrl,
         if (videoRecordingUrl != null) 'videoRecordingUrl': videoRecordingUrl,
-        // You might want to include user ID here if not handled by backend auth
       });
 
       _sosMessage = "SOS sent successfully! Emergency contacts have been notified.";
